@@ -1,0 +1,162 @@
+/*
+    This sketch demonstrates how to set up a simple HTTP-like server.
+    The server will set a GPIO pin depending on the request
+      http://server_ip/gpio/0 will set the GPIO2 low,
+      http://server_ip/gpio/1 will set the GPIO2 high
+    server_ip is the IP address of the ESP8266 module, will be
+    printed to Serial when the module is connected.
+*/
+
+//including display for 8266
+//https://www.teachmemicro.com/1-3-i2c-oled-arduino-esp8266-tutorial/
+
+#include <ESP8266WiFi.h>
+
+#ifndef STASSID
+#define STASSID "M&P-2.4"
+#define STAPSK  "Budapest2020"
+#endif
+
+
+int Raw       = A0;      //Analog channel A0 as used to measure temperature
+int threshold = 16;      //Nodemcu digital pin water sensor read-GPIO16---D0 of NodeMCU
+int Solenoid = 13;       // GPIO13---D7 of NodeMCU--Motor connection
+
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+// Create an instance of the server
+// specify the port to listen on as an argument
+WiFiServer server(80);
+
+void setup() {
+  Serial.begin(115200);
+
+  // prepare LED
+  pinMode(LED_BUILTIN, OUTPUT);//to review
+  digitalWrite(LED_BUILTIN, 0);
+
+  // Connect to WiFi network
+  Serial.println();
+  Serial.println();
+  Serial.print(F("Connecting to "));
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(F("."));
+  }
+  Serial.println();
+  Serial.println(F("WiFi connected"));
+
+  // Start the server
+  server.begin();
+  Serial.println(F("Server started"));
+
+  // Print the IP address
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+  Serial.println(F("new client"));
+
+  client.setTimeout(5000); // default is 1000
+
+  // Read the first line of the request
+  String req = client.readStringUntil('\r');
+  Serial.println(F("request: "));
+  Serial.println(req);
+
+  // Match the request
+  int val;
+  if (req.indexOf(F("/gpio/0")) != -1) {
+    val = 0;
+  } else if (req.indexOf(F("/gpio/1")) != -1) {
+    val = 1;
+  } else {
+    Serial.println(F("invalid request"));
+    val = digitalRead(LED_BUILTIN);
+  }
+
+  // Set LED according to the request
+  digitalWrite(LED_BUILTIN, val);
+
+  // read/ignore the rest of the request
+  // do not client.flush(): it is for output only, see below
+  while (client.available()) {
+    // byte by byte is not very efficient
+    client.read();
+  }
+  
+
+ float h =0.0;  //Soil Humidity level
+ float percentage = 0.0; // Calculating water level
+ float reading    = 0.0; //Analog channel moisture read
+ 
+  // Match the request, to review
+  int value = LOW;
+  Serial.println("new client");
+  while(!client.available()){
+    delay(1);
+  }
+  // Read the first line of the request
+  String request = client.readStringUntil('\r');
+  Serial.println(request);
+  client.flush();
+  if (request.indexOf("/Up=ON") != -1)  {
+     h = dht.readHumidity();    //Read humidity level
+     t = dht.readTemperature(); //Read temperature in celcius
+     f = (h * 1.8) + 32;        //Temperature converted to Fahrenheit
+     reading = analogRead(Raw);           //Analog pin reading output voltage by water moisture rain sensor
+     percentage = (reading/1024) * 100;   //Converting the raw value in percentage
+
+    if (reading<=110){  // If less mositure in soil start the motor otherwise stop
+    digitalWrite(Solenoid, HIGH);
+    value = HIGH;
+    }
+    else {
+    digitalWrite(Solenoid, LOW);
+    value = LOW;
+    }
+    
+  }
+
+ 
+  // Send the response to the client
+  // it is OK for multiple small client.print/write,
+  // because nagle algorithm will group them into one single packet
+  client.print(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nGPIO is now "));
+  client.print((val) ? F("high") : F("low"));
+  client.print(F("<br><br>Click <a href='http://"));
+  client.print(WiFi.localIP());
+  client.print(F("/gpio/1'>here</a> to switch LED GPIO on, or <a href='http://"));
+  client.print(WiFi.localIP());
+  client.print(F("/gpio/0'>here</a> to switch LED GPIO off.</html>"));
+  client.print("Soil Humidity Percentage =");
+  client.print(percentage);
+  client.print("%");
+  client.println("<br><br>");
+  if(value == HIGH) 
+    client.println("Motor/Pump Operational");
+   else 
+    client.print("Motor/Pump at Halt");
+  client.println("<br><br>");
+  client.println("<a href=\"/Up=ON\"\"><button>Update = Temperature  Humidity Moisture Values</button></a><br />"); 
+  client.println("<a href=\"/Solenoid=ON\"\"><button>Motor Pump On </button></a>");
+  client.println("<a href=\"/Solenoid=OFF\"\"><button>Motor Pump Off </button></a><br />"); 
+  client.println("</html>");
+  delay(1);
+  // The client will actually be *flushed* then disconnected
+  // when the function returns and 'client' object is destroyed (out-of-scope)
+  // flush = ensure written data are received by the other side
+  Serial.println(F("Disconnecting from client"));
+}
