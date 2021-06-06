@@ -13,15 +13,22 @@
 #include <ESP8266WiFi.h>
 
 #ifndef STASSID
-#define STASSID "M&P-2.4"
+#define STASSID "M&P-2.4"  //Default wifi station
 #define STAPSK  "Budapest2020"
 #endif
 
 
 int Raw       = A0;      //Analog channel A0 as used to measure temperature
-int threshold = 16;      //Nodemcu digital pin water sensor read-GPIO16---D0 of NodeMCU
-int Solenoid = 13;       // GPIO13---D7 of NodeMCU--Motor connection
+int Raw       = A1;      //Analog channel A1 as used to measure Soil Humidity
+int Raw       = A2;      //Analog channel A2 as used to measure Air Humidity
+int Raw       = A3;      //Analog channel A3 as used to measure Light Intensity
 
+
+int threshold = 16;      //Nodemcu digital pin water sensor read-GPIO16---D0 of NodeMCU
+float hsoil =0.0;  //Soil Humidity level
+float lux = 0.0; // Calculating light intensity
+float hair= 0.0; //Analog channel moisture read
+float temp= 0.0 //Ambient temperature
 
 const char* ssid = STASSID;
 const char* password = STAPSK;
@@ -98,10 +105,12 @@ void loop() {
   }
   
 
- float h =0.0;  //Soil Humidity level
- float percentage = 0.0; // Calculating water level
- float reading    = 0.0; //Analog channel moisture read
- 
+
+
+
+
+
+
   // Match the request, to review
   int value = LOW;
   Serial.println("new client");
