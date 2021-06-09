@@ -28,6 +28,12 @@ int LIGHT_PIN       = A3;      //Analog channel A3 as used to measure Light Inte
 
 
 
+pinMode(TEMP_PIN, INPUT);
+pinMode(HSOIL_PIN, INPUT);
+pinMode(HAIR_PIN, INPUT);
+pinMode(LIGHT_PIN, INPUT);
+
+
 float hsoil =0.0;  //Soil Humidity level
 float lux = 0.0; // Calculating light intensity
 float hair= 0.0; //Analog channel moisture read
@@ -42,11 +48,15 @@ const char* password = STAPSK;
   pinMode(LED_BUILTIN, OUTPUT);//to review
   digitalWrite(LED_BUILTIN, 0);
 
+//prepare Inputs
+
+
+
 // Create an instance of the server
 // specify the port to listen on as an argument
 //WiFiServer server(80);
 
-void setup() {
+void loop() {
   Serial.begin(115200);
 
   
@@ -73,6 +83,30 @@ void setup() {
 
   // Print the IP address
   Serial.println(WiFi.localIP());
+
+  h = dht.readHumidity();    //Read humidity level
+  t = dht.readTemperature(); //Read temperature in celcius
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  ESP.deepSleep(30e6); //restarts after 30 seconds
 }
 
 
@@ -131,8 +165,7 @@ void loop() {
   Serial.println(request);
   client.flush();
   if (request.indexOf("/Up=ON") != -1)  {
-     h = dht.readHumidity();    //Read humidity level
-     t = dht.readTemperature(); //Read temperature in celcius
+
      f = (h * 1.8) + 32;        //Temperature converted to Fahrenheit
      reading = analogRead(Raw);           //Analog pin reading output voltage by water moisture rain sensor
      percentage = (reading/1024) * 100;   //Converting the raw value in percentage
@@ -177,4 +210,8 @@ void loop() {
   // when the function returns and 'client' object is destroyed (out-of-scope)
   // flush = ensure written data are received by the other side
   Serial.println(F("Disconnecting from client"));
+
+
+
+  ESP.deepSleep(30e6); //restarts after 30 seconds
 }
