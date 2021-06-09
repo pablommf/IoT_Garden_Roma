@@ -9,10 +9,15 @@
 //https://www.teachmemicro.com/1-3-i2c-oled-arduino-esp8266-tutorial/
 
 #include <ESP8266WiFi.h>
+#include "DHT.h"
+
+
 
 #ifndef STASSID
 #define STASSID "M&P-2.4"  //Default wifi station
 #define STAPSK  "Budapest2020"
+#define DHTTYPE DHT11 
+
 #endif
 
 
@@ -27,7 +32,7 @@ pinMode(HSOIL_PIN, INPUT);
 pinMode(LIGHT_PIN, INPUT);
 
 
-float hsoil =0.0;  //Soil Humidity level
+float moisture =0.0;  //Soil Humidity level
 float lux = 0.0; // Calculating light intensity
 float hair= 0.0; //Analog channel moisture read
 float temp= 0.0 //Ambient temperature
@@ -35,15 +40,17 @@ float temp= 0.0 //Ambient temperature
 const char* ssid = STASSID;
 const char* password = STAPSK;
 
+//initializes sensors
+DHT dht(HUMTEMPAIR_PIN, DHTTYPE); //humidity and temperature sensor initialization
 
 
 // prepare LED
-  pinMode(LED_BUILTIN, OUTPUT);//to review
+ pinMode(LED_BUILTIN, OUTPUT);//to review
   digitalWrite(LED_BUILTIN, 0);
 
 //prepare Inputs
 
-
+dht.begin();
 
 // Create an instance of the server
 // specify the port to listen on as an argument
@@ -77,18 +84,26 @@ void loop() {
   // Print the IP address
   Serial.println(WiFi.localIP());
 
-  h = dht.readHumidity();    //Read humidity level
-  t = dht.readTemperature(); //Read temperature in celcius
+
 
   //Reads sensors values
 
+  hair = dht.readHumidity();    //Read humidity level
+  temp = dht.readTemperature(); //Read temperature in celcius
+  moisture = analogRead (HSOIL_PIN);
+  lux=digitalRead( LIGHT_PIN );
 
 
+
+  if (isnan(hair) || isnan(temp) || isnan(moisture|| isnan(lux))) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }
 
   //Sends them to server via http
 
-
-
+  //using Azure IOTHub
+  //check https://github.com/Azure/azure-iot-arduino
 
 
 
