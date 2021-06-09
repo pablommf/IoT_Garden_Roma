@@ -36,16 +36,20 @@ float temp= 0.0 //Ambient temperature
 const char* ssid = STASSID;
 const char* password = STAPSK;
 
+
+
+// prepare LED
+  pinMode(LED_BUILTIN, OUTPUT);//to review
+  digitalWrite(LED_BUILTIN, 0);
+
 // Create an instance of the server
 // specify the port to listen on as an argument
-WiFiServer server(80);
+//WiFiServer server(80);
 
 void setup() {
   Serial.begin(115200);
 
-  // prepare LED
-  pinMode(LED_BUILTIN, OUTPUT);//to review
-  digitalWrite(LED_BUILTIN, 0);
+  
 
   // Connect to WiFi network
   Serial.println();
@@ -64,20 +68,22 @@ void setup() {
   Serial.println(F("WiFi connected"));
 
   // Start the server
-  server.begin();
-  Serial.println(F("Server started"));
+  //server.begin();
+  //Serial.println(F("Server started"));
 
   // Print the IP address
   Serial.println(WiFi.localIP());
 }
 
+
+
 void loop() {
   // Check if a client has connected
   WiFiClient client = server.available();
-  if (!client) {
-    return;
-  }
-  Serial.println(F("new client"));
+  //if (!client) {
+  //  return;
+  //}
+  //Serial.println(F("new client"));
 
   client.setTimeout(5000); // default is 1000
 
