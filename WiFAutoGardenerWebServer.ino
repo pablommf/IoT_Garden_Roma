@@ -1,4 +1,7 @@
 /*
+    This project is intended to upload IoT gardening measurements backend
+    Device registration logic is included with unique token generated
+
     This sketch demonstrates how to set up a simple HTTP-like server.
     The server will set a GPIO pin depending on the request
       http://server_ip/gpio/0 will set the GPIO2 low,
@@ -24,7 +27,7 @@ int Raw       = A2;      //Analog channel A2 as used to measure Air Humidity
 int Raw       = A3;      //Analog channel A3 as used to measure Light Intensity
 
 
-int threshold = 16;      //Nodemcu digital pin water sensor read-GPIO16---D0 of NodeMCU
+
 float hsoil =0.0;  //Soil Humidity level
 float lux = 0.0; // Calculating light intensity
 float hair= 0.0; //Analog channel moisture read
