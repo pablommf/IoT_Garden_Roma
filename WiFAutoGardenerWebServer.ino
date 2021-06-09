@@ -21,10 +21,9 @@
 #endif
 
 
-int TEMP_PIN       = A0;      //Analog channel A0 as used to measure temperature
-int HSOIL_PIN  = A1;      //Analog channel A1 as used to measure Soil Humidity
-int HAIR_PIN       = A2;      //Analog channel A2 as used to measure Air Humidity
-int LIGHT_PIN       = A3;      //Analog channel A3 as used to measure Light Intensity
+int HSOIL_PIN       =         2;      //ADC used to measure Soil Humidity
+int HUMTEMPAIR_PIN  =         14;      //GPIO #4 used to measure Air Humidity and Temperature
+int LIGHT_PIN       =         13;      //GPIO #4 used to measure Light Intensity
 
 
 
